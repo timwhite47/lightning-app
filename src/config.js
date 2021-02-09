@@ -4,7 +4,7 @@
 
 module.exports.RETRY_DELAY = 1000;
 module.exports.LND_INIT_DELAY = 5000;
-module.exports.NOTIFICATION_DELAY = 5000;
+module.exports.NOTIFICATION_DELAY = 50;
 module.exports.RATE_DELAY = 15 * 60 * 1000;
 module.exports.ATPL_DELAY = 60 * 60 * 1000;
 module.exports.PAYMENT_TIMEOUT = 60 * 1000;
@@ -45,3 +45,5 @@ module.exports.FIATS = {
 };
 module.exports.DEFAULT_UNIT = 'sat';
 module.exports.DEFAULT_FIAT = 'usd';
+
+module.exports.COINZEN_API_ROOT = 'http://127.0.0.1:8000';

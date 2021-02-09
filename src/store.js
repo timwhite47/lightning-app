@@ -106,6 +106,13 @@ export class Store {
         restoring: false,
         autopilot: true,
         nodeScores: {},
+        authentication: {
+          email: '',
+          username: '',
+          password: '',
+          passwordVerify: '',
+          jwt: '',
+        },
       },
     });
   }

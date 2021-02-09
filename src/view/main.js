@@ -51,8 +51,10 @@ import {
   setting,
   info,
   autopilot,
+  registration,
 } from '../action';
 import store from '../store';
+import Register from './register';
 
 class MainView extends Component {
   render() {
@@ -65,6 +67,9 @@ class MainView extends Component {
         />
         {route === 'Welcome' && <Welcome />}
         {route === 'Loader' && <Loader />}
+        {route === 'Register' && (
+          <Register store={store} registration={registration} />
+        )}
         {route === 'SelectSeed' && (
           <SelectSeed store={store} wallet={wallet} setting={setting} />
         )}

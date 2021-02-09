@@ -89,6 +89,8 @@ import Wait from '../src/view/wait';
 import WaitMobile from '../src/view/wait-mobile';
 import RestoreSeed from '../src/view/restore-seed';
 import RestoreSeedMobile from '../src/view/restore-seed-mobile';
+import Register from '../src/view/register';
+import RegisterAction from '../src/action/register';
 
 const store = new Store();
 store.init();
@@ -110,6 +112,8 @@ sinon.stub(wallet, 'checkPassword');
 sinon.stub(wallet, 'getExchangeRate');
 const transaction = new TransactionAction(store, grpc, nav, notify);
 sinon.stub(transaction, 'update');
+const registration = new RegisterAction(store, grpc, nav, notify, Clipboard);
+// sinon.stub(register, 'generateUri');
 const invoice = new InvoiceAction(store, grpc, nav, notify, Clipboard);
 sinon.stub(invoice, 'generateUri');
 const payment = new PaymentAction(store, grpc, nav, notify);
@@ -316,6 +320,9 @@ storiesOf('Screens', module)
   ))
   .add('Invoice QR (Mobile)', () => (
     <InvoiceQRMobile store={store} invoice={invoice} nav={navMobile} />
+  ))
+  .add('Register', () => (
+    <Register store={store} registration={registration} />
   ));
 
 // set some dummy data
