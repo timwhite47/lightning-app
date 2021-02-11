@@ -17,6 +17,10 @@ class NavAction {
     this._store.route = 'Register';
   }
 
+  goSignIn() {
+    this._store.route = 'SignIn';
+  }
+
   goSelectSeed() {
     this._store.route = 'SelectSeed';
   }

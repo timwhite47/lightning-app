@@ -1,10 +1,11 @@
 import { COINZEN_API_ROOT } from './config';
 
 class Client {
-  constructor(store, grpc, db, notify) {
+  constructor(store, grpc, nav, db, notify) {
     this._store = store;
     this._grpc = grpc;
     this._db = db;
+    this._nav = nav;
     this._notify = notify;
     let { jwt } = this._store.settings.authentication;
 
@@ -19,13 +20,15 @@ class Client {
     };
   }
 
-  setAuthentication() {
+  async setAuthentication() {
     //  TODO: Ensure not expired
-
     let { jwt } = this._store.settings.authentication;
-
     if (jwt) {
-      this.jwt = jwt;
+      await this.registerPeer().then(
+        ({ status, headers, body, json, statusText }) => {
+          this.jwt = jwt;
+        }
+      );
     }
   }
 
@@ -33,9 +36,9 @@ class Client {
     let { username, password, email } = this._store.settings.authentication;
     let data = { username, email, password, organization_set: [] };
 
-    return await this._fetchPost('register/', data)
-      .then(() => this._updateJWT(username, password))
-      .then(console.log);
+    return await this._fetchPost('register/', data).then(() =>
+      this._updateJWT(username, password)
+    );
   }
 
   async _updateJWT(username, password) {
@@ -46,7 +49,13 @@ class Client {
     this._db.save();
   }
 
+  clearAuthentication() {
+    this._store.settings.authentication.jwt = null;
+    this._db.save();
+  }
+
   async _fetchPost(path, data) {
+    console.log(path, data);
     return await this._fetch(path, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -64,18 +73,22 @@ class Client {
     return headers;
   }
 
-  _fetch(path, opts) {
+  async _fetch(path, opts) {
     let url = `${COINZEN_API_ROOT}/${path}`;
     return fetch(url, { headers: this._apiHeaders(), ...opts })
-      .then(response =>
-        response.text().then(text => ({
+      .then(response => {
+        let r = response.text().then(text => ({
           status: response.status,
           statusText: response.statusText,
           headers: response.headers,
           body: text,
-        }))
-      )
-      .then(({ status, statusText, headers, body }) => {
+        }));
+
+        console.log(r);
+        return r;
+      })
+      .then(response => {
+        let { status, statusText, headers, body } = response;
         let json;
         try {
           json = JSON.parse(body);
@@ -83,17 +96,21 @@ class Client {
           // not json, no big deal
         }
         if (status < 200 || status >= 300) {
-          return Promise.reject(statusText);
+          return Promise.reject({ status, headers, body, json, statusText });
         }
         return Promise.resolve({ status, headers, body, json });
       });
   }
 
   async registerPeer() {
-    let jwt = this.jwt;
-    let payload = await this._grpc.sendCommand('SignMessage', {
+    let jwt = this._store.settings.authentication.jwt;
+    console.log('registering peer', jwt);
+    let params = {
       msg: Buffer.from(jwt, 'utf8'),
-    });
+    };
+    console.log(params);
+    let payload = await this._grpc.sendCommand('SignMessage', params);
+    console.log(payload);
     payload['token'] = jwt;
 
     return this._fetchPost('peers/register/', payload);

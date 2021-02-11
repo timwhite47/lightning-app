@@ -453,7 +453,11 @@ class WalletAction {
         () => this._nav.goHome()
       );
     } catch (err) {
-      this.initPassword();
+      this._store.walletUnlocked = true;
+      // when(
+      //   () => this._store.lndReady && this._store.walletAddress,
+      //   () => this._nav.goHome()
+      // );
       this._notification.display({ type: 'error', msg: 'Invalid password' });
     }
   }

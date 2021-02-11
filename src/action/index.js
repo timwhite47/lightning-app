@@ -22,7 +22,7 @@ import PaymentAction from './payment';
 import InvoiceAction from './invoice';
 import SettingAction from './setting';
 import AtplAction from './autopilot';
-import RegisterAction from './register';
+import AuthenticationAction from './authentication';
 import { Client } from '../coinzen';
 
 //
@@ -44,9 +44,15 @@ export const invoice = new InvoiceAction(store, grpc, nav, notify, Clipboard);
 export const payment = new PaymentAction(store, grpc, nav, notify, Clipboard);
 export const setting = new SettingAction(store, wallet, db, ipc);
 export const autopilot = new AtplAction(store, grpc, db, notify);
-export const client = new Client(store, grpc, db, notify);
-export const registration = new RegisterAction(client, store, grpc, db, notify);
-
+export const client = new Client(store, grpc, nav, db, notify);
+export const registration = new AuthenticationAction(
+  client,
+  store,
+  grpc,
+  nav,
+  notify,
+  Clipboard
+);
 payment.listenForUrl(ipc); // enable incoming url handler
 
 //
@@ -63,7 +69,7 @@ when(() => store.loaded, () => grpc.initUnlocker());
 /**
  * Triggered after the wallet unlocker grpc client is initialized.
  */
-when(() => store.unlockerReady, () => registration.init(wallet));
+when(() => store.unlockerReady, () => wallet.init());
 
 /**
  * Triggered the first time the app was started e.g. to set the
@@ -81,9 +87,8 @@ when(
     await nap();
     await grpc.closeUnlocker();
     await grpc.initLnd();
-    await grpc.initAutopilot();
-    console.log('REGISTERING PEER');
-    await client.registerPeer().then(console.log);
+    // await grpc.initAutopilot();
+    await registration.init();
   }
 );
 
