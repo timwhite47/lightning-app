@@ -87,7 +87,6 @@ when(
     await nap();
     await grpc.closeUnlocker();
     await grpc.initLnd();
-    // await grpc.initAutopilot();
     await registration.init();
   }
 );
