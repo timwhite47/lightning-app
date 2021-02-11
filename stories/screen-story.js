@@ -91,6 +91,7 @@ import RestoreSeed from '../src/view/restore-seed';
 import RestoreSeedMobile from '../src/view/restore-seed-mobile';
 import Register from '../src/view/register';
 import AuthenticationAction from '../src/action/authentication';
+import SignInView from '../src/view/signin';
 
 const store = new Store();
 store.init();
@@ -329,6 +330,9 @@ storiesOf('Screens', module)
   ))
   .add('Register', () => (
     <Register store={store} registration={authentication} />
+  ))
+  .add('SignIn', () => (
+    <SignInView store={store} registration={authentication} />
   ));
 
 // set some dummy data
