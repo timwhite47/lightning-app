@@ -28,3 +28,4 @@ yarn.lock
 /data
 /test/data
 /assets/bin
+.idea/
