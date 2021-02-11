@@ -11,7 +11,6 @@ class Client {
 
     if (jwt) {
       this.jwt = jwt;
-      console.log(this.jwt);
     }
 
     this.options = {
@@ -24,11 +23,9 @@ class Client {
     //  TODO: Ensure not expired
     let { jwt } = this._store.settings.authentication;
     if (jwt) {
-      await this.registerPeer().then(
-        ({ status, headers, body, json, statusText }) => {
-          this.jwt = jwt;
-        }
-      );
+      await this.registerPeer().then(() => {
+        this.jwt = jwt;
+      });
     }
   }
 
@@ -55,7 +52,6 @@ class Client {
   }
 
   async _fetchPost(path, data) {
-    console.log(path, data);
     return await this._fetch(path, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -84,7 +80,6 @@ class Client {
           body: text,
         }));
 
-        console.log(r);
         return r;
       })
       .then(response => {
@@ -104,13 +99,10 @@ class Client {
 
   async registerPeer() {
     let jwt = this._store.settings.authentication.jwt;
-    console.log('registering peer', jwt);
     let params = {
       msg: Buffer.from(jwt, 'utf8'),
     };
-    console.log(params);
     let payload = await this._grpc.sendCommand('SignMessage', params);
-    console.log(payload);
     payload['token'] = jwt;
 
     return this._fetchPost('peers/register/', payload);
