@@ -45,3 +45,5 @@ module.exports.FIATS = {
 };
 module.exports.DEFAULT_UNIT = 'sat';
 module.exports.DEFAULT_FIAT = 'usd';
+
+module.exports.COINZEN_API_ROOT = 'http://127.0.0.1:8000';

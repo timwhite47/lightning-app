@@ -22,13 +22,14 @@ import PaymentAction from './payment';
 import InvoiceAction from './invoice';
 import SettingAction from './setting';
 import AtplAction from './autopilot';
+import AuthenticationAction from './authentication';
+import { Client } from '../coinzen';
 
 //
 // Inject dependencies
 //
 
 store.init(); // initialize computed values
-
 export const ipc = new IpcAction(window.ipcRenderer);
 export const db = new AppStorage(store, AsyncStorage);
 export const log = new LogAction(store, ipc);
@@ -43,7 +44,15 @@ export const invoice = new InvoiceAction(store, grpc, nav, notify, Clipboard);
 export const payment = new PaymentAction(store, grpc, nav, notify, Clipboard);
 export const setting = new SettingAction(store, wallet, db, ipc);
 export const autopilot = new AtplAction(store, grpc, db, notify);
-
+export const client = new Client(store, grpc, nav, db, notify);
+export const registration = new AuthenticationAction(
+  client,
+  store,
+  grpc,
+  nav,
+  notify,
+  Clipboard
+);
 payment.listenForUrl(ipc); // enable incoming url handler
 
 //
@@ -78,7 +87,7 @@ when(
     await nap();
     await grpc.closeUnlocker();
     await grpc.initLnd();
-    await grpc.initAutopilot();
+    await registration.init();
   }
 );
 
