@@ -10,7 +10,7 @@ class AuthenticationAction {
 
   async init() {
     let { username, jwt } = this._store.settings.authentication;
-    console.log('INIT', username, jwt);
+
     if (!username) {
       this._nav.goRegister();
     } else if (!jwt) {
@@ -19,7 +19,6 @@ class AuthenticationAction {
       await this._client
         .setAuthentication()
         .catch(({ status }) => {
-          console.log('status', status);
           if (status === 401) {
             this._client.clearAuthentication();
             this._nav.goSignIn();
