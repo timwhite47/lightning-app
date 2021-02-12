@@ -33,6 +33,9 @@ module.exports.STRONG_PASSWORD_LENGTH = 12;
 module.exports.MAX_LOG_LENGTH = 10000;
 module.exports.RECOVERY_WINDOW = 250;
 
+module.exports.MIN_CHANNEL_SIZE = 20000;
+module.exports.MAX_CHANNEL_SIZE = 16777215;
+
 module.exports.UNITS = {
   sat: { display: 'sats', displayLong: 'Satoshi', denominator: 1 },
   bit: { display: 'bits', displayLong: 'Bits', denominator: 100 },

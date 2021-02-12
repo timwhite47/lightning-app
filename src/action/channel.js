@@ -3,13 +3,14 @@
  * call the corresponding GRPC apis for channel management.
  */
 
-import { MED_TARGET_CONF } from '../config';
+import { MED_TARGET_CONF, MIN_CHANNEL_SIZE, MAX_CHANNEL_SIZE } from '../config';
 import { toSatoshis, poll, getTimeTilAvailable } from '../helper';
 import * as log from './log';
 
 class ChannelAction {
-  constructor(store, grpc, nav, notification) {
+  constructor(store, client, grpc, nav, notification) {
     this._store = store;
+    this._client = client;
     this._grpc = grpc;
     this._nav = nav;
     this._notification = notification;
@@ -24,9 +25,8 @@ class ChannelAction {
    * and then navigating to the view.
    * @return {undefined}
    */
-  initCreate() {
-    this._store.channel.pubkeyAtHost = '';
-    this._store.channel.amount = '';
+  async initCreate() {
+    await this._client.setLndConnectionParams();
     this._nav.goChannelCreate();
   }
 
@@ -83,7 +83,39 @@ class ChannelAction {
       this.getChannels(),
       this.getPendingChannels(),
       this.getClosedChannels(),
-    ]);
+    ]).then(() => this.ensureOpenChannel());
+  }
+
+  async ensureOpenChannel() {
+    // Ensure Channel is open or pending open/close with CZ LND Node
+    let amount;
+    let {
+      confirmedBalanceSatoshis: confirmedBalance,
+      channels,
+      pendingChannels,
+      channel: {
+        connectionParams: { host, identity_pubkey: pubkey },
+      },
+    } = this._store;
+    let openChannel = channels.find(c => c.remotePubkey === pubkey);
+    let pendingChannel = pendingChannels.find(c => c.remotePubkey === pubkey);
+
+    if (confirmedBalance < MIN_CHANNEL_SIZE) {
+      //  Too small of balance to create channel. Falsy for amount.
+      amount = 0;
+    } else if (confirmedBalance >= MAX_CHANNEL_SIZE) {
+      // Balance is too large to put all in a channel. Set to max channel size.
+      amount = MAX_CHANNEL_SIZE;
+    } else {
+      // The total confirmed balance is within range set as amount.
+      amount = confirmedBalance;
+    }
+
+    if (amount && !openChannel && !pendingChannel) {
+      return this.connectToPeer({ host, pubkey }).then(() =>
+        this.openChannel({ pubkey, amount: amount })
+      );
+    }
   }
 
   /**
@@ -91,6 +123,7 @@ class ChannelAction {
    * @return {Promise<undefined>}
    */
   async pollChannels() {
+    await this._client.setLndConnectionParams();
     await poll(() => this.update());
   }
 

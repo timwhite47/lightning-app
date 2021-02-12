@@ -453,7 +453,9 @@ class WalletAction {
         () => this._nav.goHome()
       );
     } catch (err) {
-      this.initPassword();
+      console.error(err);
+      // this.initPassword();
+      this._store.walletUnlocked = true;
       this._notification.display({ type: 'error', msg: 'Invalid password' });
     }
   }
