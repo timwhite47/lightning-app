@@ -53,6 +53,17 @@ export const registration = new AuthenticationAction(
   notify,
   Clipboard
 );
+
+window.addEventListener(
+  'load',
+  function() {
+    ipc.listen('request', function(event, req, port) {
+      console.log(arguments);
+      ipc.send(`info-${port}`, null, { foo: 'bar' }).then(r => console.log(r));
+    });
+  },
+  false
+);
 payment.listenForUrl(ipc); // enable incoming url handler
 
 //

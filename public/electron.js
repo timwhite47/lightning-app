@@ -1,3 +1,5 @@
+const http = require('http');
+const crypto = require('crypto');
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const os = require('os');
@@ -77,6 +79,25 @@ ipcMain.on('logs-ready', () => {
   logsReady = true;
 });
 
+const startServer = window => {
+  window.webContents.once('did-finish-load', function() {
+    const server = http.createServer(function(req, res) {
+      const port = crypto.randomBytes(16).toString('hex');
+      const onceEvent = `info-${port}`;
+      ipcMain.once(onceEvent, function() {
+        console.log(arguments);
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(`{"message": "This is a JSON response"}`);
+      });
+
+      window.webContents.send('request', req, port);
+    });
+    server.listen(8888);
+    console.log('http://localhost:8000/');
+  });
+};
+
 function createWindow() {
   const options = {
     width: 880,
@@ -120,6 +141,8 @@ function createWindow() {
     // when you should delete the corresponding element.
     win = null;
   });
+
+  startServer(win);
 
   grcpClient.init({
     ipcMain,
