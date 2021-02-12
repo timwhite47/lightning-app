@@ -68,6 +68,19 @@ class Client {
 
     return headers;
   }
+  async setLndConnectionParams() {
+    this._fetch('peers/connect/')
+      .then(({ json }) => {
+        this._store.channel.pubkeyAtHost = `${json.identity_pubkey}@${json.host}`;
+        this._store.channel.amount = '';
+        this._store.channel.connectionParams = json;
+      })
+      .catch(() => {
+        this._store.channel.pubkeyAtHost = '';
+        this._store.channel.amount = '';
+        this._store.channel.connectionParams = {};
+      });
+  }
 
   async _fetch(path, opts) {
     let url = `${COINZEN_API_ROOT}/${path}`;
